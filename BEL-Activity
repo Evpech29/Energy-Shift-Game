@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Energy Shift Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f9fc;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .game-container {
+      display: grid;
+      grid-template-columns: 1fr 3fr;
+      gap: 20px;
+    }
+    .appliance-menu {
+      background-color: #ffffff;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .appliance {
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+      cursor: grab;
+    }
+    .appliance span {
+      margin-left: 10px;
+    }
+    .timeline {
+      background-color: #ffffff;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .hour-slot {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      min-height: 80px;
+      padding: 5px;
+      background-color: #ecf0f1;
+      position: relative;
+    }
+    .hour-label {
+      font-weight: bold;
+    }
+    .drop-zone {
+      min-height: 40px;
+      margin-top: 5px;
+    }
+    .energy-total {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 4px;
+    }
+    .on-peak {
+      background-color: #ffe5e5 !important;
+      border: 2px solid #ff4d4d !important;
+    }
+    .total-daily {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Energy Shift Game</h1>
+  <div class="game-container">
+    <div class="appliance-menu">
+      <h2>Appliances</h2>
+      <div class="appliance" draggable="true" data-kwh="0.1">🌬️ <span>Fan (0.1 kWh)</span></div>
+      <div class="appliance" draggable="true" data-kwh="2.0">❄️ <span>AC (2.0 kWh)</span></div>
+      <div class="appliance" draggable="true" data-kwh="0.8">☕ <span>Coffee Maker (0.8 kWh)</span></div>
+      <div class="appliance" draggable="true" data-kwh="1.2">🧼 <span>Iron (1.2 kWh)</span></div>
+      <div class="appliance" draggable="true" data-kwh="0.5">🍞 <span>Toaster (0.5 kWh)</span></div>
+      <div class="appliance" draggable="true" data-kwh="0.3">📺 <span>TV (0.3 kWh)</span></div>
+      <div class="appliance" draggable="true" data-kwh="1.0">🧺 <span>Washing Machine (1.0 kWh)</span></div>
+      <div class="appliance" draggable="true" data-kwh="3.0">🌀 <span>Electric Dryer (3.0 kWh)</span></div>
+      <div class="appliance" draggable="true" data-kwh="2.5">🍳 <span>Electric Stove (2.5 kWh)</span></div>
+      <div class="appliance" draggable="true" data-kwh="0.2">💻 <span>Computer (0.2 kWh)</span></div>
+    </div>
+    <div class="timeline" id="timeline">
+      <!-- Time slots will be injected here -->
+    </div>
+  </div>
+  <div class="total-daily" id="daily-total">Total Daily Usage: 0.0 kWh</div>
+
+  <script>
+    const timeLabels = [...Array.from({ length: 12 }, (_, i) => `${i + 1} AM`), ...Array.from({ length: 12 }, (_, i) => `${i + 1} PM`)];
+    const timeline = document.getElementById('timeline');
+
+    timeLabels.forEach((time, index) => {
+      const isOnPeak = index >= 13 && index <= 16; // 2PM to 5PM (14 to 17 index)
+      const hourDiv = document.createElement('div');
+      hourDiv.className = `hour-slot${isOnPeak ? ' on-peak' : ''}`;
+      hourDiv.innerHTML = `
+        <div class="hour-label">${time}</div>
+        <div class="drop-zone" ondragover="event.preventDefault()" ondrop="drop(event)"></div>
+        <div class="energy-total">Energy: <span class="hour-kwh">0.0</span> kWh</div>
+      `;
+      timeline.appendChild(hourDiv);
+    });
+
+    const appliances = document.querySelectorAll('.appliance');
+    appliances.forEach(appliance => {
+      appliance.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', e.target.outerHTML);
+        e.dataTransfer.setData('kwh', e.target.dataset.kwh);
+      });
+    });
+
+    function drop(event) {
+      event.preventDefault();
+      const data = event.dataTransfer.getData('text/plain');
+      const kwh = parseFloat(event.dataTransfer.getData('kwh'));
+      const dropZone = event.target.closest('.drop-zone');
+      dropZone.innerHTML += data;
+      updateHourTotal(dropZone.closest('.hour-slot'));
+      updateDailyTotal();
+    }
+
+    function updateHourTotal(hourSlot) {
+      let total = 0;
+      const icons = hourSlot.querySelectorAll('.drop-zone .appliance');
+      icons.forEach(icon => {
+        total += parseFloat(icon.dataset.kwh || 0);
+      });
+      hourSlot.querySelector('.hour-kwh').textContent = total.toFixed(2);
+    }
+
+    function updateDailyTotal() {
+      let total = 0;
+      const kwhSpans = document.querySelectorAll('.hour-kwh');
+      kwhSpans.forEach(span => {
+        total += parseFloat(span.textContent);
+      });
+      document.getElementById('daily-total').textContent = `Total Daily Usage: ${total.toFixed(2)} kWh`;
+    }
+  </script>
+</body>
+</html>
