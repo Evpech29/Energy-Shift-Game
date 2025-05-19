@@ -33,10 +33,6 @@
     .appliance span {
       margin-left: 10px;
     }
-     #toggleMultiAddBtn.active {
-      background-color: #007BFF;
-      color: white;
-    }
     .timeline {
       background-color: #ffffff;
       padding: 15px;
@@ -147,11 +143,11 @@
   </style>
 </head>
 <body>
-  <h1>BEL Energy Shift Game Test2</h1>
+  <h1>BEL Energy Shift Game Test</h1>
   <div class="game-container">
   <div class="appliance-menu">
   <h2>Appliances</h2>
-  <div class="appliance" draggable="true" appliance-name="Fan" data-kwh="0.1">🌬️ <span>Fan (0.1 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="0.1">🌬️ <span>Fan (0.1 kWh)</span></div>
   <div class="appliance" draggable="true" data-kwh="2.0">❄️ <span>AC (2.0 kWh)</span></div>
   <div class="appliance" draggable="true" data-kwh="0.8">☕ <span>Coffee Maker (0.8 kWh)</span></div>
   <div class="appliance" draggable="true" data-kwh="1.2">🧼 <span>Iron (1.2 kWh)</span></div>
@@ -168,12 +164,7 @@
   <div class="appliance" draggable="true" data-kwh="2.0">🚿 <span>Electric Shower Head (2.0 kWh)</span></div>
   <div class="appliance" draggable="true" data-kwh="0.3">📱 <span>Charging Devices (0.3 kWh)</span></div>
   <div class="appliance" draggable="true" data-kwh="0.4">🎸 <span>Instrument (0.4 kWh)</span></div>
-<div class="appliance-buttons">
-  <button id="addToAllBtn">Add to all</button>
-  <button id="toggleMultiAddBtn">Add to multiple</button>
 </div>
-
-  </div>
     <div class="timeline" id="timeline"></div>
   </div>
 
@@ -235,7 +226,6 @@ document.querySelectorAll('.appliance-menu .appliance').forEach(appliance => {
     clearSelected();
     appliance.classList.add('selected');
     selectedAppliance = appliance;
-    selectedApplianceId = appliance.querySelector('.appliance-name')?.textContent?.trim(); // Using name
   });
 });
 
@@ -245,7 +235,6 @@ function clearSelected() {
     el.classList.remove('selected');
   });
   selectedAppliance = null;
-  selectedApplianceId = null;
 }
 
 // Drop handler
@@ -372,73 +361,6 @@ function resetGame() {
   clearSelected();
   updateDailyTotal();
 }
- let selectedApplianceId = null;
-  let multiAddEnabled = false;
-
-  function selectAppliance(applianceId) {
-    selectedApplianceId = applianceId;
-  }
-
-  document.getElementById("addToAllBtn").addEventListener("click", () => {
-  if (!selectedAppliance) {
-    alert("Please select an appliance first.");
-    return;
-  }
-
-  document.querySelectorAll(".hour-slot").forEach(slot => {
-    const dropZone = slot.querySelector('.drop-zone');
-    const container = dropZone.querySelector('.appliance-container');
-    const clone = selectedAppliance.cloneNode(true);
-    clone.classList.remove('selected');
-
-    clone.addEventListener('click', (e) => {
-      e.stopPropagation();
-      clone.remove();
-      updateHourTotal(slot);
-      updateDailyTotal();
-    });
-
-    container.appendChild(clone);
-    updateHourTotal(slot);
-  });
-
-  updateDailyTotal();
-  clearSelected();
-});
-
-
-    document.querySelectorAll(".block").forEach(block => {
-      const blockId = block.getAttribute("data-block-id");
-      addApplianceToBlock(selectedApplianceId, blockId);
-    });
-  });
-
-  document.getElementById("toggleMultiAddBtn").addEventListener("click", function () {
-    multiAddEnabled = !multiAddEnabled;
-    this.classList.toggle("active", multiAddEnabled);
-    this.textContent = multiAddEnabled ? "Disable multiple" : "Add to multiple";
-  });
-
-  document.querySelectorAll(".block").forEach(block => {
-    block.addEventListener("click", function () {
-      if (!selectedApplianceId) {
-        alert("Please select an appliance first.");
-        return;
-      }
-
-      const blockId = this.getAttribute("data-block-id");
-      addApplianceToBlock(selectedApplianceId, blockId);
-
-      if (!multiAddEnabled) {
-        selectedApplianceId = null;
-      }
-    });
-  });
-
-  function addApplianceToBlock(applianceId, blockId) {
-    // Your logic to render or assign appliance
-    console.log(`Added appliance ${applianceId} to block ${blockId}`);
-  }   
 </script>
 </body>
 </html>
