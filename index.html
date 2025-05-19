@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Energy Shift Game</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -40,70 +39,328 @@
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 10px;
     }
     .hour-slot {
       border: 1px solid #ccc;
       border-radius: 8px;
-      min-height: 60px;
+      min-height: 80px;
       padding: 5px;
       background-color: #ecf0f1;
+      position: relative;
     }
     .hour-label {
       font-weight: bold;
     }
     .drop-zone {
-      min-height: 40px;
-      margin-top: 5px;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.appliance-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-height: 30px;
+}
+
+.tappable-space {
+  text-align: center;
+  color: #888;
+  font-size: 0.9em;
+  cursor: pointer;
+  padding: 4px;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  background-color: #fefefe;
+}
+    .energy-total {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 4px;
     }
+    .on-peak {
+      background-color: #ffe5e5 !important;
+      border: 2px solid #ff4d4d !important;
+    }
+    .total-daily {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    .cost-summary {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 1em;
+    }
+    .bar-graph {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      margin-top: 20px;
+      height: 150px;
+    }
+    .bar {
+      width: 20px;
+      margin: 0 2px;
+      background-color: #33cc33;
+      transition: height 0.3s ease;
+    }
+    .bar.on-peak {
+      background-color: #ff9966;
+    }
+    button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      background-color: #3498db;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    @media (max-width: 768px) {
+      .game-container {
+        grid-template-columns: 1fr;
+      }
+      .timeline {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    .appliance.selected {
+  background-color: #d0ebff;
+  border: 2px solid #007bff;
+  border-radius: 8px;
+}
   </style>
 </head>
 <body>
-  <h1>Energy Shift Game</h1>
+  <h1>BEL Energy Shift Game</h1>
   <div class="game-container">
-    <div class="appliance-menu">
-      <h2>Appliances</h2>
-      <div class="appliance" draggable="true" data-kwh="0.1">🌬️ <span>Fan (0.1 kWh)</span></div>
-      <div class="appliance" draggable="true" data-kwh="2.0">❄️ <span>AC (2.0 kWh)</span></div>
-      <div class="appliance" draggable="true" data-kwh="0.8">☕ <span>Coffee Maker (0.8 kWh)</span></div>
-      <div class="appliance" draggable="true" data-kwh="1.2">🧼 <span>Iron (1.2 kWh)</span></div>
-      <div class="appliance" draggable="true" data-kwh="0.5">🍞 <span>Toaster (0.5 kWh)</span></div>
-      <div class="appliance" draggable="true" data-kwh="0.3">📺 <span>TV (0.3 kWh)</span></div>
-    </div>
-    <div class="timeline">
-      <!-- Time slots from 1 AM to 12 Midnight -->
-      <script>
-        const timeLabels = [
-          ...Array.from({ length: 12 }, (_, i) => `${i + 1} AM`),
-          ...Array.from({ length: 12 }, (_, i) => `${i + 1} PM`)
-        ];
-        timeLabels.forEach(time => {
-          document.write(`
-            <div class="hour-slot" ondragover="event.preventDefault()" ondrop="drop(event)">
-              <div class="hour-label">${time}</div>
-              <div class="drop-zone"></div>
-            </div>
-          `);
-        });
-      </script>
-    </div>
+  <div class="appliance-menu">
+  <h2>Appliances</h2>
+  <div class="appliance" draggable="true" data-kwh="0.1">🌬️ <span>Fan (0.1 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="2.0">❄️ <span>AC (2.0 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="0.8">☕ <span>Coffee Maker (0.8 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="1.2">🧼 <span>Iron (1.2 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="0.5">🍞 <span>Toaster (0.5 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="0.3">📺 <span>TV (0.3 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="1.0">🧺 <span>Washing Machine (1.0 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="3.0">🌀 <span>Electric Dryer (3.0 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="2.5">🍳 <span>Electric Stove (2.5 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="0.2">💻 <span>Computer (0.2 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="1.5">🧊 <span>Refrigerator (1.5 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="0.6">💡 <span>Lights (0.6 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="0.7">🎮 <span>Game Console (0.7 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="1.2">📶 <span>Microwave (1.2 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="2.0">🚿 <span>Electric Shower Head (2.0 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="0.3">📱 <span>Charging Devices (0.3 kWh)</span></div>
+  <div class="appliance" draggable="true" data-kwh="0.4">🎸 <span>Instrument (0.4 kWh)</span></div>
+</div>
+    <div class="timeline" id="timeline"></div>
   </div>
 
-  <script>
-    const appliances = document.querySelectorAll('.appliance');
-    appliances.forEach(appliance => {
-      appliance.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', e.target.outerHTML);
-      });
-    });
+  <div class="total-daily" id="daily-total">Total Daily Usage: 0.0 kWh</div>
+  <div class="cost-summary">
+    <div id="flat-rate">Flat Rate Cost (@$0.43): $0.00</div>
+    <div class="tou-breakdown">
+      <strong>Time-of-Use Pricing:</strong><br>
+      Off-Peak Usage: <span id="offpeak-kwh">0.00</span> kWh × $0.33 = $<span id="offpeak-cost">0.00</span><br>
+      On-Peak Usage: <span id="onpeak-kwh">0.00</span> kWh × $0.49 = $<span id="onpeak-cost">0.00</span><br>
+      <strong>Total TOU Cost:</strong> $<span id="tou-rate">0.00</span>
+    </div>
+  </div>
+  <div class="bar-graph" id="barGraph"></div>
+  <button onclick="resetGame()">Reset</button>
+ <script>
+const timeLabels = [
+  '1 AM','2 AM','3 AM','4 AM','5 AM','6 AM','7 AM','8 AM','9 AM','10 AM','11 AM','12 PM',
+  '1 PM','2 PM','3 PM','4 PM','5 PM','6 PM','7 PM','8 PM','9 PM','10 PM','11 PM','12 AM'
+];
+const onPeakIndexes = [12,13,14,15,18,19,20]; // 1-4 PM and 7-9 PM
+const timeline = document.getElementById('timeline');
+const barGraph = document.getElementById('barGraph');
 
-    function drop(event) {
-      event.preventDefault();
-      const data = event.dataTransfer.getData('text/plain');
-      const dropZone = event.target.closest('.hour-slot').querySelector('.drop-zone');
-      dropZone.innerHTML += data;
+timeLabels.forEach((time, index) => {
+  const isOnPeak = onPeakIndexes.includes(index);
+  const hourDiv = document.createElement('div');
+hourDiv.className = `hour-slot${isOnPeak ? ' on-peak' : ''}`;
+hourDiv.innerHTML = `
+  <div class="hour-label">${time}</div>
+  <div class="drop-zone" ondragover="event.preventDefault()" ondrop="drop(event)">
+    <div class="appliance-container"></div>
+    <div class="tappable-space">+ Tap to Add</div>
+  </div>
+  <div class="energy-total">Energy: <span class="hour-kwh">0.0</span> kWh</div>
+`;
+
+  timeline.appendChild(hourDiv);
+
+  const bar = document.createElement('div');
+  bar.className = `bar${isOnPeak ? ' on-peak' : ''}`;
+  bar.style.height = '5px';
+  barGraph.appendChild(bar);
+});
+
+let selectedAppliance = null;
+
+// Add event listeners to menu appliances
+document.querySelectorAll('.appliance-menu .appliance').forEach(appliance => {
+  appliance.addEventListener('dragstart', (e) => {
+    clearSelected();
+    selectedAppliance = appliance;
+    appliance.classList.add('selected');
+    e.dataTransfer.setData('text/html', appliance.outerHTML);
+    e.dataTransfer.setData('kwh', appliance.dataset.kwh);
+  });
+
+  appliance.addEventListener('click', () => {
+    clearSelected();
+    appliance.classList.add('selected');
+    selectedAppliance = appliance;
+  });
+});
+
+// Remove selection highlight from all appliances
+function clearSelected() {
+  document.querySelectorAll('.appliance.selected').forEach(el => {
+    el.classList.remove('selected');
+  });
+  selectedAppliance = null;
+}
+
+// Drop handler
+function drop(event) {
+  event.preventDefault();
+  const html = event.dataTransfer.getData('text/html');
+  const kwh = parseFloat(event.dataTransfer.getData('kwh'));
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  const clone = temp.firstChild;
+
+  clone.classList.remove('selected');
+
+  // Bind the click-to-remove behavior
+  clone.addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevent triggering parent drop-zone's click
+    clone.remove();
+    updateHourTotal(clone.closest('.hour-slot'));
+    updateDailyTotal();
+  });
+
+  const dropZone = event.target.closest('.drop-zone');
+
+  // ⚠️ FIX: Allow multiple appliances, don’t remove or replace any
+  dropZone.appendChild(clone);
+
+  clearSelected();
+  updateHourTotal(dropZone.closest('.hour-slot'));
+  updateDailyTotal();
+}
+// Tap-to-place for mobile or clicks
+document.querySelectorAll('.drop-zone').forEach(zone => {
+  const tappable = zone.querySelector('.tappable-space');
+  const container = zone.querySelector('.appliance-container');
+
+  // Allow placing by tapping the tappable-space
+  tappable.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    if (selectedAppliance) {
+      const clone = selectedAppliance.cloneNode(true);
+      clone.classList.remove('selected');
+
+      clone.addEventListener('click', (e) => {
+        e.stopPropagation();
+        clone.remove();
+        updateHourTotal(zone.closest('.hour-slot'));
+        updateDailyTotal();
+      });
+
+      container.appendChild(clone);
+      updateHourTotal(zone.closest('.hour-slot'));
+      updateDailyTotal();
+      clearSelected();
     }
-  </script>
+  });
+
+  // Still allow tapping anywhere else in drop-zone (if no tappable-space clicked)
+  zone.addEventListener('click', (e) => {
+    if (e.target.closest('.appliance')) return;
+
+    if (selectedAppliance) {
+      const clone = selectedAppliance.cloneNode(true);
+      clone.classList.remove('selected');
+
+      clone.addEventListener('click', (e) => {
+        e.stopPropagation();
+        clone.remove();
+        updateHourTotal(zone.closest('.hour-slot'));
+        updateDailyTotal();
+      });
+
+      container.appendChild(clone);
+      updateHourTotal(zone.closest('.hour-slot'));
+      updateDailyTotal();
+      clearSelected();
+    }
+  });
+});
+
+
+
+function updateHourTotal(hourSlot) {
+  let total = 0;
+  const icons = hourSlot.querySelectorAll('.drop-zone .appliance');
+  icons.forEach(icon => {
+    total += parseFloat(icon.dataset.kwh || 0);
+  });
+  hourSlot.querySelector('.hour-kwh').textContent = total.toFixed(2);
+}
+
+function updateDailyTotal() {
+  let total = 0;
+  let peakKwh = 0;
+  let offPeakKwh = 0;
+  const hourSlots = document.querySelectorAll('.hour-slot');
+  const bars = document.querySelectorAll('.bar');
+
+  hourSlots.forEach((slot, index) => {
+    const kwh = parseFloat(slot.querySelector('.hour-kwh').textContent);
+    total += kwh;
+    bars[index].style.height = `${kwh * 20}px`;
+    if (onPeakIndexes.includes(index)) {
+      peakKwh += kwh;
+    } else {
+      offPeakKwh += kwh;
+    }
+  });
+
+  document.getElementById('daily-total').textContent = `Total Daily Usage: ${total.toFixed(2)} kWh`;
+
+  document.getElementById('flat-rate').textContent = `Flat Rate Cost (@$0.43): $${(total * 0.43).toFixed(2)}`;
+  document.getElementById('offpeak-kwh').textContent = offPeakKwh.toFixed(2);
+  document.getElementById('onpeak-kwh').textContent = peakKwh.toFixed(2);
+  document.getElementById('offpeak-cost').textContent = (offPeakKwh * 0.33).toFixed(2);
+  document.getElementById('onpeak-cost').textContent = (peakKwh * 0.49).toFixed(2);
+  document.getElementById('tou-rate').textContent = ((offPeakKwh * 0.33) + (peakKwh * 0.49)).toFixed(2);
+}
+
+function resetGame() {
+  document.querySelectorAll('.drop-zone').forEach(zone => zone.innerHTML = '');
+  document.querySelectorAll('.hour-kwh').forEach(kwh => kwh.textContent = '0.0');
+  document.querySelectorAll('.bar').forEach(bar => bar.style.height = '5px');
+  clearSelected();
+  updateDailyTotal();
+}
+</script>
 </body>
 </html>
