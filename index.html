@@ -33,6 +33,10 @@
     .appliance span {
       margin-left: 10px;
     }
+     #toggleMultiAddBtn.active {
+      background-color: #007BFF;
+      color: white;
+    }
     .timeline {
       background-color: #ffffff;
       padding: 15px;
@@ -164,7 +168,12 @@
   <div class="appliance" draggable="true" data-kwh="2.0">🚿 <span>Electric Shower Head (2.0 kWh)</span></div>
   <div class="appliance" draggable="true" data-kwh="0.3">📱 <span>Charging Devices (0.3 kWh)</span></div>
   <div class="appliance" draggable="true" data-kwh="0.4">🎸 <span>Instrument (0.4 kWh)</span></div>
+<div class="appliance-buttons">
+  <button id="addToAllBtn">Add to all</button>
+  <button id="toggleMultiAddBtn">Add to multiple</button>
 </div>
+
+  </div>
     <div class="timeline" id="timeline"></div>
   </div>
 
@@ -361,6 +370,51 @@ function resetGame() {
   clearSelected();
   updateDailyTotal();
 }
+ let selectedApplianceId = null;
+  let multiAddEnabled = false;
+
+  function selectAppliance(applianceId) {
+    selectedApplianceId = applianceId;
+  }
+
+  document.getElementById("addToAllBtn").addEventListener("click", () => {
+    if (!selectedApplianceId) {
+      alert("Please select an appliance first.");
+      return;
+    }
+
+    document.querySelectorAll(".block").forEach(block => {
+      const blockId = block.getAttribute("data-block-id");
+      addApplianceToBlock(selectedApplianceId, blockId);
+    });
+  });
+
+  document.getElementById("toggleMultiAddBtn").addEventListener("click", function () {
+    multiAddEnabled = !multiAddEnabled;
+    this.classList.toggle("active", multiAddEnabled);
+    this.textContent = multiAddEnabled ? "Disable multiple" : "Add to multiple";
+  });
+
+  document.querySelectorAll(".block").forEach(block => {
+    block.addEventListener("click", function () {
+      if (!selectedApplianceId) {
+        alert("Please select an appliance first.");
+        return;
+      }
+
+      const blockId = this.getAttribute("data-block-id");
+      addApplianceToBlock(selectedApplianceId, blockId);
+
+      if (!multiAddEnabled) {
+        selectedApplianceId = null;
+      }
+    });
+  });
+
+  function addApplianceToBlock(applianceId, blockId) {
+    // Your logic to render or assign appliance
+    console.log(`Added appliance ${applianceId} to block ${blockId}`);
+  }   
 </script>
 </body>
 </html>
