@@ -165,9 +165,9 @@
   <div class="appliance" draggable="true" data-kwh="0.3">📱 <span>Charging Devices (0.3 kWh)</span></div>
   <div class="appliance" draggable="true" data-kwh="0.4">🎸 <span>Instrument (0.4 kWh)</span></div>
 </div>
+    <button id="multiInsertBtn">Enable Multi-Insert Mode</button>
     <div class="timeline" id="timeline"></div>
   </div>
-
   <div class="total-daily" id="daily-total">Total Daily Usage: 0.0 kWh</div>
   <div class="cost-summary">
     <div id="flat-rate">Flat Rate Cost (@$0.43): $0.00</div>
@@ -179,6 +179,7 @@
     </div>
   </div>
   <div class="bar-graph" id="barGraph"></div>
+  
   <button onclick="resetGame()">Reset</button>
  <script>
 const timeLabels = [
@@ -290,6 +291,23 @@ document.querySelectorAll('.drop-zone').forEach(zone => {
       updateDailyTotal();
       clearSelected();
     }
+
+    function updateHourEnergy(hourSlot) {
+  const kwhElements = hourSlot.querySelectorAll('.appliance-container .appliance');
+  let totalKwh = 0;
+  kwhElements.forEach(el => {
+    totalKwh += parseFloat(el.dataset.kwh || 0);
+  });
+  hourSlot.querySelector('.hour-kwh').textContent = totalKwh.toFixed(1);
+
+  // Update bar height
+  const index = Array.from(timeline.children).indexOf(hourSlot);
+  const bar = barGraph.children[index];
+  bar.style.height = `${totalKwh * 20}px`;
+
+  updateTotalEnergy(); // You likely already have this function
+}
+
   });
 
   // Still allow tapping anywhere else in drop-zone (if no tappable-space clicked)
@@ -353,6 +371,39 @@ function updateDailyTotal() {
   document.getElementById('onpeak-cost').textContent = (peakKwh * 0.49).toFixed(2);
   document.getElementById('tou-rate').textContent = ((offPeakKwh * 0.33) + (peakKwh * 0.49)).toFixed(2);
 }
+let multiInsertMode = false;
+
+document.getElementById('multiInsertBtn').addEventListener('click', () => {
+  if (!selectedAppliance) {
+    alert("Please select an appliance first.");
+    return;
+  }
+  multiInsertMode = !multiInsertMode;
+  document.getElementById('multiInsertBtn').textContent = multiInsertMode ? "Disable Multi-Insert Mode" : "Enable Multi-Insert Mode";
+});
+
+// Make tappable spaces clickable to insert appliance
+document.querySelectorAll('.tappable-space').forEach(tappable => {
+  tappable.addEventListener('click', () => {
+    if (!selectedAppliance) {
+      alert("Please select an appliance first.");
+      return;
+    }
+    if (!multiInsertMode) {
+      alert("Enable Multi-Insert Mode to use this feature.");
+      return;
+    }
+    const kwh = parseFloat(selectedAppliance.dataset.kwh);
+    const applianceClone = selectedAppliance.cloneNode(true);
+    applianceClone.classList.remove('selected');
+    applianceClone.draggable = false;
+
+    const container = tappable.previousElementSibling; // .appliance-container
+    container.appendChild(applianceClone);
+
+    updateHourEnergy(tappable.closest('.hour-slot'));
+  });
+});
 
 function resetGame() {
   document.querySelectorAll('.drop-zone').forEach(zone => zone.innerHTML = '');
