@@ -151,7 +151,7 @@
   <div class="game-container">
   <div class="appliance-menu">
   <h2>Appliances</h2>
-  <div class="appliance" draggable="true" data-kwh="0.1">🌬️ <span>Fan (0.1 kWh)</span></div>
+  <div class="appliance" draggable="true" appliance-name="Fan" data-kwh="0.1">🌬️ <span>Fan (0.1 kWh)</span></div>
   <div class="appliance" draggable="true" data-kwh="2.0">❄️ <span>AC (2.0 kWh)</span></div>
   <div class="appliance" draggable="true" data-kwh="0.8">☕ <span>Coffee Maker (0.8 kWh)</span></div>
   <div class="appliance" draggable="true" data-kwh="1.2">🧼 <span>Iron (1.2 kWh)</span></div>
@@ -235,6 +235,7 @@ document.querySelectorAll('.appliance-menu .appliance').forEach(appliance => {
     clearSelected();
     appliance.classList.add('selected');
     selectedAppliance = appliance;
+    selectedApplianceId = appliance.querySelector('.appliance-name')?.textContent?.trim(); // Using name
   });
 });
 
@@ -244,6 +245,7 @@ function clearSelected() {
     el.classList.remove('selected');
   });
   selectedAppliance = null;
+  selectedApplianceId = null;
 }
 
 // Drop handler
@@ -378,10 +380,32 @@ function resetGame() {
   }
 
   document.getElementById("addToAllBtn").addEventListener("click", () => {
-    if (!selectedApplianceId) {
-      alert("Please select an appliance first.");
-      return;
-    }
+  if (!selectedAppliance) {
+    alert("Please select an appliance first.");
+    return;
+  }
+
+  document.querySelectorAll(".hour-slot").forEach(slot => {
+    const dropZone = slot.querySelector('.drop-zone');
+    const container = dropZone.querySelector('.appliance-container');
+    const clone = selectedAppliance.cloneNode(true);
+    clone.classList.remove('selected');
+
+    clone.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clone.remove();
+      updateHourTotal(slot);
+      updateDailyTotal();
+    });
+
+    container.appendChild(clone);
+    updateHourTotal(slot);
+  });
+
+  updateDailyTotal();
+  clearSelected();
+});
+
 
     document.querySelectorAll(".block").forEach(block => {
       const blockId = block.getAttribute("data-block-id");
